@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>My Todo App</title>
+    <link rel="stylesheet" href="node_modules/normalize.css/normalize.css"/>
+    <link rel="stylesheet" href="node_modules/jquery-datetimepicker/build/jquery.datetimepicker.min.css"/>
+    <link rel="stylesheet" href="css/base.css" />
+</head>
+<body>
+<div class="msg">
+    <span class="msg-content"></span>
+    <span class="anchor confirmed">知道了</span>
+    
+</div>
+<div class="container">
+    <h1>我的Todo</h1>
+    <form class="add-task">
+        <input type="text" 
+               name="content"
+               placeholder="e.g. 下午记得买菜"
+               autofocus
+               autocomplete="off"
+        />
+        <button type="submit">submit</button>
+    </form>
+    <div class="task-list"><!--清单列表开始-->
+    
+    </div><!--清单列表结束-->
+    <div class="task-detail-mask"></div>
+    <div class="task-detail"><!--任务详情开始-->
+        <div id="">
+            <div class="content"><!--任务标题开始-->
+                下午记得买菜
+            </div>
+            <div>
+            <div class="desc"><!--任务描述开始-->
+                <textarea id="" ></textarea>
+            </div>
+            </div>
+            <div class="remind"><!--任务定时提醒-->
+            <input type="date"/>
+            <!--<button type="submit">submit</button>-->
+            </div>
+        </div>
+    </div><!--任务详情结束-->
+    
+</div>
+<video class="alerter" src="alert.mp3"></video>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="node_modules/store/store.js"></script>
+<script src="node_modules/jquery-datetimepicker/build/jquery.datetimepicker.full.js"></script>
+<script src="js/base.js"></script>
+</body>
+</html>
