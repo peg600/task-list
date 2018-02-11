@@ -24,6 +24,36 @@
     $form_add_task.on('submit',on_add_task_form_submit);
     $task_detail_mask.on('click',hide_task_detail);
 
+
+    function init(){
+        task_list=store.get('task_list')||[];
+        listen_msg_event();
+        if(task_list.length){
+            render_task_list();
+            task_remind_check();
+        }
+    }
+
+    /*监听定时提醒的点击*/
+    function listen_msg_event(){
+        $msg_confirm.on('click',function(){
+            hide_msg();
+        })
+    }
+
+    /*显示定时提醒并播放提示音*/
+    function show_msg(msg){
+        if(!msg) return;
+        $msg_content.html(msg);
+        $alerter.get(0).play();
+        $msg.show();
+    }
+
+    function hide_msg(msg){
+        $msg.hide();
+    }
+
+    /*弹出确认框*/
     function pop(arg){
         if(!arg){
             console.error('pop title is required');
@@ -38,7 +68,6 @@
             dfd,
             timer,
             confirmed;
-
 
         dfd=$.Deferred();
         if(typeof arg=="string" )
@@ -91,7 +120,7 @@
                 right:0,
                 background:'rgba(0,0,0,.5)',
             })
-
+        /*轮询确认点击状态*/
         timer=setInterval(function(){
             if(confirmed!==undefined){
                 dfd.resolve(confirmed);
@@ -117,6 +146,7 @@
             $box.remove();
         }
 
+        /*确认框定位*/
         function adjust_box_position(){
             var window_width=$window.width(),
                 window_height=$window.height(),
@@ -143,12 +173,7 @@
         return dfd.promise();
     }
 
-    function listen_msg_event(){
-        $msg_confirm.on('click',function(){
-            hide_msg();
-        })
-    }
-
+    /*监听提交事件*/
     function on_add_task_form_submit(e){
         /*禁用默认行为*/
         var new_task={},
@@ -163,6 +188,34 @@
         }
     }
 
+    /*将新task推入并重新渲染*/
+    function add_task(new_task){
+        task_list.push(new_task);
+        refresh_task_list();
+        return true;
+    }
+
+    /*刷新localstorage并重新渲染下方列表*/
+    function refresh_task_list(){
+        store.set('task_list',task_list);
+        render_task_list();
+    }
+
+    /*查找并监听所有删除按钮的点击事件*/
+    function listen_task_delete(){
+        $task_delete_trigger.on('click',function(){
+            var $this=$(this);
+            /*找到所有删除按钮所在的元素*/
+            var $item=$this.parent().parent();
+            var index=$item.data('index');
+            pop('确定删除?')
+                .then(function(r){
+                    r?delete_task(index):null;
+                });
+        })
+    }
+
+    /*查找监听所有详细按钮的点击事件*/
     function listen_task_detail(){
         var index;
         $('.task-item').on('dblclick',function(){
@@ -177,6 +230,7 @@
         })
     }
 
+    /*查找监听所有勾选框的点击事件*/
     function listen_checkbox_complete(){
         $checkbox_complete.on('click',function(){
             var $this=$(this);
@@ -193,6 +247,7 @@
         })
     }
 
+    /*定位并展现详细信息框*/
     function show_task_detail(index){
         /*生成详情模板*/
         render_task_detail(index);
@@ -210,6 +265,7 @@
 
     }
 
+    /*更新task_list*/
     function update_task(index,data){
         if(!task_list[index]) return;
         task_list[index]=$.extend({},task_list[index],data);
@@ -265,34 +321,13 @@
 
     }
 
-    /*查找并监听所有删除按钮的点击事件*/
-    function listen_task_delete(){
-        $task_delete_trigger.on('click',function(){
-        var $this=$(this);
-        /*找到所有删除按钮所在的元素*/
-        var $item=$this.parent().parent();
-        var index=$item.data('index');
-        pop('确定删除?')
-            .then(function(r){
-                r?delete_task(index):null;
-            });
-        })
-    }
-
-    function init(){
-        task_list=store.get('task_list')||[];
-        listen_msg_event();
-        if(task_list.length){
-            render_task_list();
-            task_remind_check();
-        }
-    }
-
+    /*定时筛选有提醒且未到提醒时间的任务，获得提醒时间并与当前时间比对*/
     function task_remind_check(){
         var current_timestamp;
         var itl=setInterval(function(){
             for(var i=0;i<task_list.length;i++){
-                var item=store.get('task_list')[i],task_timestamp;
+                var item=store.get('task_list')[i],
+                    task_timestamp;
                 if(!item || !item.remind_date || item.informed)
                     continue;
                 current_timestamp=(new Date()).getTime();
@@ -305,36 +340,11 @@
         },300);
     }
 
-    function show_msg(msg){
-        if(!msg) return;
-        $msg_content.html(msg);
-        $alerter.get(0).play();
-        $msg.show();
-    }
-
-    function hide_msg(msg){
-        $msg.hide();
-    }
-
-    function add_task(new_task){
-
-        /*将新task推入*/
-        task_list.push(new_task);
-        refresh_task_list();
-        return true;
-    }
-
-    /*刷新localstorage并重新渲染下方列表*/
-    function refresh_task_list(){
-        store.set('task_list',task_list);
-        render_task_list();
-    }
 
     /*删除一条task，并更新localstorage*/
     function delete_task(index){
         /*如果没有index 或者 index不存在则直接返回*/
         if(index===undefined||!task_list[index]) return;
-
         delete task_list[index];
         refresh_task_list();
     }
@@ -367,6 +377,7 @@
 
     }
 
+    /*生成单个task内容*/
     function render_task_item(data,index){
         if(index===undefined||!data) return;
         var list_item_tpl=
